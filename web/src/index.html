@@ -18,8 +18,8 @@
   </head>
   <body>
     <div id="app" class="w-full flex flex-col items-center">
-      <h1 class="text-red-900 text-4xl mb-4">Ruby Warrior</h1>
-      <div id="intro" class="w-[400px]">
+      <h1 class="text-red-900 text-4xl my-4 max-sm:my-2 dark:text-red-300">Ruby Warrior</h1>
+      <div id="intro" class="max-w-[400px] p-5">
         <p>
           This is a game designed to teach the Ruby language in a fun and interactive way.
         </p>
@@ -47,22 +47,27 @@
         <h3>Loading...</h3>
         <sl-spinner></sl-spinner>
       </div>
-      <div id="game" class="hidden w-full flex flex-row">
-        <div class="w-1/2 min-w-[50%] relative flex-grow">
-          <div class="w-full relative px-5 border border-black">
-            <div id="editor" class="w-full min-h-[400px]"></div>
-          </div>
-          <div class="flex flex-row items-start gap-5">
-            <div class="flex flex-col gap-2">
-              <sl-button id="runBtn" variant="primary" class="mt-4">Run</sl-button>
-              <sl-button id="pauseResumeBtn" variant="secondary" class="mt-4">Pause/Resume</sl-button>
-              <sl-button id="interruptBtn" variant="danger" class="mt-4">Stop</sl-button>
-            </div>
-            <div id="turn" class="font-mono whitespace-pre-wrap p-2">
-            </div>
-          </div>
+      <div id="game" class="hidden w-full flex flex-row max-sm:flex-col p-5 max-sm:px-0">
+        <div class="sm:w-1/2 sm:min-w-[50%] max-sm:w-full relative flex-grow">
+          <div id="editor" class="w-full min-h-[500px] max-sm:min-h-[400px]"></div>
         </div>
-        <div id="readme" class="font-mono whitespace-pre-wrap min-h-[400px] px-5">
+        <div class="flex flex-col gap-1">
+          <div class="flex flex-row items-center gap-5 relative sm:ml-5">
+            <div class="flex flex-row absolute -top-4 gap-1 right-1">
+              <sl-button id="runBtn" variant="primary" circle>
+                <sl-icon name="play-circle" label="Run"></sl-icon>
+              </sl-button>
+              <sl-button id="pauseResumeBtn" variant="secondary" circle>
+                <sl-icon name="pause-circle" label="Pause/Unpause"></sl-icon>
+              </sl-button>
+              <sl-button id="interruptBtn" variant="danger" circle>
+                <sl-icon name="stop-circle" label="Interrupt"></sl-icon>
+              </sl-button>
+            </div>
+            <div id="turn" class="font-mono whitespace-pre-wrap p-2 w-full min-h-[100px] bg-purple-300 dark:bg-purple-900">- game stage -</div>
+          </div>
+          <div id="readme" class="font-mono whitespace-pre-wrap min-h-[400px] px-5">
+          </div>
         </div>
       </div>
     </div>

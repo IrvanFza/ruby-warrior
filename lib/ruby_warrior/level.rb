@@ -50,11 +50,11 @@ module RubyWarrior
       PlayerGenerator.new(self).generate
     end
 
-    def play(turns = 1000)
+    def play(turns = 1000, &block)
       load_level
       turns.times do |n|
         return if passed? || failed?
-        resume(n)
+        resume(n, &block)
       end
     end
 
