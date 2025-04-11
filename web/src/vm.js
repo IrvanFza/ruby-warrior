@@ -9,7 +9,7 @@ import {
 
 import appURL from "./ruby-warrior-web.wasm?url";
 
-export const gameDir = new PreopenDirectory("/game", {});
+export const gameDir = new PreopenDirectory("/game", new Map());
 
 export default async function initVM() {
   console.log("Loading Wasm app...");
@@ -38,14 +38,9 @@ export default async function initVM() {
     gameDir,
   ];
   const wasi = new WASI([], [], fds, { debug: false });
-  const vm = new RubyVM();
-  const imports = {
-    wasi_snapshot_preview1: wasi.wasiImport,
-  };
-  vm.addToImports(imports);
-
-  const instance = await WebAssembly.instantiate(module, imports);
-  await vm.setInstance(instance);
+  const { vm, instance } = await RubyVM.instantiateModule({
+    module, wasip1: wasi
+  });
 
   console.log("Initializing Wasm app...");
   wasi.initialize(instance);
@@ -68,7 +63,7 @@ export default async function initVM() {
 
     module Kernel
       def sleep(val)
-        JS.global[:$sleeper].do_sleep(val).await
+        JS.global[:$sleeper].nextSleep(val)
       end
     end
 

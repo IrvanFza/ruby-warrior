@@ -25,43 +25,20 @@ class OutputPrinter {
 }
 
 class Sleeper {
-  do_sleep(val) {
-    if (this.terminating) return Promise.reject("Terminated");
+  constructor() {
+    this._nextSleep = undefined;
+  }
 
-    if (this.pausePromise) return this.pausePromise;
+  nextSleep(val) {
+    this._nextSleep = val;
+  }
 
-    return new Promise((resolve) => {
-      setTimeout(resolve, val * 1000);
+  async sleep() {
+    if (!this._nextSleep) return;
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, this._nextSleep * 1000);
     });
-  }
-
-  terminate() {
-    this.terminating = true;
-  }
-
-  pause() {
-    if (this.pausePromise) return this.pausePromise;
-
-    let resumer;
-
-    this.pausePromise = new Promise((resolve) => {
-      resumer = resolve;
-    });
-
-    this.resumer = resumer;
-
-    return this.pausePromise;
-  }
-
-  resume() {
-    if (!this.pausePromise) return;
-
-    const resumer = this.resumer;
-
-    delete this.pausePromise;
-    delete this.resumer;
-
-    resumer();
   }
 }
 
@@ -71,6 +48,9 @@ class Game {
     this.name = name;
     this.skillLevel = skillLevel;
     this.paused = false;
+    this.stopped = false;
+    this.pausePromise = undefined;
+    this.pauseResolver = undefined;
   }
 
   async start() {
@@ -78,7 +58,7 @@ class Game {
 
     if (loaded) return;
 
-    await this.vm.evalAsync(`
+    this.vm.eval(`
       RubyWarrior::Runner.new(%w[-d /game], StdinStub.new(%w[y ${this.skillLevel} ${this.name}]), STDOUT).run
     `);
 
@@ -106,36 +86,62 @@ class Game {
   }
 
   async play(input, output) {
+    if (this.paused) return this.pauseResume();
+
+    this.stopped = false;
+    this.paused = false;
+
     window.$stdout = new OutputPrinter(output);
     window.$sleeper = this.sleeper = new Sleeper();
 
-    let res = await this.vm.evalAsync(`
+    this.vm.eval(`
       File.write("${this.gameDir}/player.rb", <<~'SRC'
 ${input}
       SRC
       )
-      RubyWarrior::Runner.new(%w[-d ${this.gameDir}], StdinStub.new(%w[y y]), ExternalStdout.new).run
+      runner = RubyWarrior::Runner.new(%w[-d ${this.gameDir}], StdinStub.new(%w[y y]), ExternalStdout.new)
+      $game = runner.game
+      # we control the game from the JS side
+      $game.max_turns = 1
+      runner.run
     `);
+
+    let turnNum = 1;
+
+    // Turn loop
+    while(true) {
+      let done = this.vm.eval(`$game.current_level.failed? || $game.current_level.passed?`).toJS();
+      if (done) break;
+
+      await window.$sleeper.sleep()
+
+      if (this.stopped) return;
+
+      if (this.pausePromise) await this.pausePromise;
+
+      this.vm.eval(`$game.resume_current_level(${turnNum++})`)
+    }
+
+    let passed = this.vm.eval(`$game.current_level.passed?`).toJS();
 
     this.save();
 
-    return res;
+    return passed;
   }
 
   pauseResume() {
-    if (!this.sleeper) return;
-
     if (this.paused) {
       this.paused = false;
-      this.sleeper.resume();
+      this.pauseResolver();
     } else {
       this.paused = true;
-      this.sleeper.pause();
+      this.pausePromise = new Promise(resolve => this.pauseResolver = resolve);
     }
   }
 
   interrupt() {
-    this.sleeper.terminate();
+    if (this.paused) this.pauseResume();
+    this.stopped = true;
   }
 
   async load() {
@@ -147,7 +153,7 @@ ${input}
 
     this.gameDir = gameDir;
 
-    await this.vm.evalAsync(`
+    this.vm.eval(`
 FileUtils.mkdir_p("${this.gameDir}")
 File.write("${this.gameDir}/.profile", <<~'SRC'
 ${profile}
@@ -187,6 +193,7 @@ SRC
 }
 
 export const start = async (vm, name, skillLevel) => {
+  window.$vm = vm;
   const game = new Game(vm, name, skillLevel);
   await game.start();
   return game;

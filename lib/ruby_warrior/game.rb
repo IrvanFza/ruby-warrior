@@ -1,5 +1,11 @@
 module RubyWarrior
   class Game
+    attr_accessor :max_turns
+
+    def initialize
+      @max_turns = 1000
+    end
+
     def start
       UI.puts "Welcome to Ruby Warrior"
 
@@ -61,10 +67,19 @@ module RubyWarrior
     end
 
     def play_current_level
-      continue = true
       current_level.load_player
       UI.puts "Starting Level #{current_level.number}"
-      current_level.play
+      current_level.play(max_turns)
+      check_termination
+    end
+
+    def resume_current_level(n)
+      current_level.resume(n)
+      check_termination
+    end
+
+    def check_termination
+      continue = true
       if current_level.passed?
         if next_level.exists?
           UI.puts "Success! You have found the stairs."
@@ -78,7 +93,7 @@ module RubyWarrior
         else
           request_next_level
         end
-      else
+      elsif current_level.failed?
         continue = false
         UI.puts "Sorry, you failed level #{current_level.number}. Change your script and try again."
         if !Config.skip_input? && current_level.clue &&

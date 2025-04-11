@@ -36,7 +36,7 @@ startForm.addEventListener("submit", async (e) => {
   const runBtn = document.getElementById("runBtn");
   const turnOutput = document.getElementById("turn");
 
-  runBtn.addEventListener("click", async () => {
+  runBtn?.addEventListener("click", async () => {
     runBtn.setAttribute("disabled", true);
     try {
       let success = await game.play(editor.getValue(), turnOutput);
@@ -52,12 +52,12 @@ startForm.addEventListener("submit", async (e) => {
   });
 
   const interruptBtn = document.querySelector("#interruptBtn");
-  interruptBtn.addEventListener("click", () => {
+  interruptBtn?.addEventListener("click", () => {
     game.interrupt();
   });
 
   const pauseResumeBtn = document.querySelector("#pauseResumeBtn");
-  pauseResumeBtn.addEventListener("click", () => {
+  pauseResumeBtn?.addEventListener("click", () => {
     game.pauseResume();
   });
 });

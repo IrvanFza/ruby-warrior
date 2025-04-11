@@ -2,6 +2,8 @@ require "optparse"
 
 module RubyWarrior
   class Runner
+    attr_reader :game
+
     def initialize(arguments, stdin, stdout)
       @arguments = arguments
       @stdin = stdin

@@ -54,13 +54,17 @@ module RubyWarrior
       load_level
       turns.times do |n|
         return if passed? || failed?
-        UI.puts "- turn #{n + 1} -"
-        UI.print @floor.character
-        @floor.units.each { |unit| unit.prepare_turn }
-        @floor.units.each { |unit| unit.perform_turn }
-        yield if block_given?
-        @time_bonus -= 1 if @time_bonus > 0
+        resume(n)
       end
+    end
+
+    def resume(n = 0)
+      UI.puts "- turn #{n + 1} -"
+      UI.print @floor.character
+      @floor.units.each { |unit| unit.prepare_turn }
+      @floor.units.each { |unit| unit.perform_turn }
+      yield if block_given?
+      @time_bonus -= 1 if @time_bonus > 0
     end
 
     def tally_points

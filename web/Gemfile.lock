@@ -1,0 +1,17 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    base64 (0.2.0)
+    js (2.7.1)
+    ruby_wasm (2.7.1-arm64-darwin)
+
+PLATFORMS
+  arm64-darwin
+
+DEPENDENCIES
+  base64
+  js
+  ruby_wasm
+
+BUNDLED WITH
+   2.6.5
