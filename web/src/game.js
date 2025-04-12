@@ -78,7 +78,7 @@ class Game {
   }
 
   get playerrb() {
-    return this.vm.eval(`File.read("${this.gameDir}/player.rb")`).toString();
+    return this.vm.eval(`File.read("${this.gameDir}/player.rb")`).toString().replace(/\n+$/, '\n');
   }
 
   get profile() {
